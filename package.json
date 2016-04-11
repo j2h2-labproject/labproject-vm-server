@@ -1,0 +1,15 @@
+{
+	"name": "LabProject-VM-Server",
+	"version": "0.0.1",
+	"description": "VM Server for ",
+	"author": "Jacob Hartman <jacob@j2h2.com>",
+	"keywords": [
+		"labroject"
+	],
+	"dependencies": {
+		"diskusage": "*"
+	},
+	"devDependencies": {
+		"mocha": "*"
+	}
+}
