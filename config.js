@@ -3,8 +3,9 @@ module.exports = {
 	frontend: '',
 	hypervisor: 'vbox',
 	hypervisor_console: 'rdp',
-	uid: 'labproject',
-	gid: 'labproject',
+	uid: 'jacob',
+	gid: 'jacob',
+	external_interface: 'eth0',
 	// The path where the libvirt pool is. Do not make relative path. Do not put a slash on the end
 	pool_path: '/tmp/labproject-images',
 	// The path where the ISO storage is. Do not make relative path. Do not put a slash on the end
