@@ -5,6 +5,10 @@ module.exports = {
 	hypervisor_console: 'rdp',
 	uid: 'jacob',
 	gid: 'jacob',
+	driver: 'libvirt',
+	driver_config: {
+		hypervisor: 'vbox'
+	},
 	external_interface: 'eth0',
 	// The path where the libvirt pool is. Do not make relative path. Do not put a slash on the end
 	pool_path: '/tmp/labproject-images',

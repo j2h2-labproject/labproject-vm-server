@@ -6,11 +6,34 @@ var fs = require("fs");
 var config = require(LABPROJECT_BASE + "/config");
 
 var vm_handler = require(LABPROJECT_LIB + "/handlers/vm_handler");
+var command = require(LABPROJECT_LIB + "/common/command");
+var string_util = require(LABPROJECT_LIB + "/common/string");
 
 var LABPROJECT_COMMON_BASE = process.cwd();
 
 
 describe('vm_handler Object:', function(){
+
+	before(function(done){
+		command.run("qemu-img", ["create", "-f", "vdi", config.pool_path + "/test.vdi", "512M"], function(error, stdout, stderr) {
+			if (error) {
+				(null != null).should.equal(true);
+			}
+			done();
+		});
+	});
+
+	after(function(done) {
+		command.run("VBoxManage", ["closemedium", 'disk', config.pool_path + "/test.vdi"], function(error, stdout, stderr) {
+
+			if (error) {
+				(null != null).should.equal(true);
+			}
+			fs.unlink(config.pool_path + "/test.vdi");
+			done();
+		});
+	});
+
 
 	describe('handles function', function(){
 
@@ -28,7 +51,7 @@ describe('vm_handler Object:', function(){
 		it('cause error on not setting param', function(done){
 			vm_handler.handle('vm_exists', {}, function(error, result){
 				(error == null).should.equal(false);
-				error.should.equal("No UUID set");
+				error.should.equal("Invalid UUID");
 
 				done();
 			});
@@ -60,53 +83,161 @@ describe('vm_handler Object:', function(){
 
 	describe('create_vm function', function(){
 
-		it('cause error on not setting xml', function(done){
+		it('cause error on blank config object', function(done){
 			vm_handler.handle('create_vm', {}, function(error, result){
 				(error === null).should.equal(false);
-				error.should.equal("XML config not set");
+				error.should.equal("Invalid config");
 
 				done();
 			});
 		});
 
-		it('cause error on invalid xml', function(done){
-			vm_handler.handle('create_vm', {xmlconfig: "asdfadsfasdf"}, function(error, result){
-				(error === null).should.equal(false);
-				error.should.equal("Could not create VM");
+		// it('cause error on invalid xml', function(done){
+		// 	vm_handler.handle('create_vm', {xmlconfig: "asdfadsfasdf"}, function(error, result){
+		// 		(error === null).should.equal(false);
+		// 		error.should.equal("Could not create VM");
+		//
+		// 		done();
+		// 	});
+		// });
 
-				done();
-			});
-		});
-
-		var encoded_xml = 'PGRvbWFpbiB0eXBlPSd2Ym94Jz4NCiAgPG5hbWU+dGVzdDwvbmFtZT4NCiAgPG1lbW9yeSB1bml0PSJNIj41MTI8L21lbW9yeT4NCiAgPHZjcHU+MTwvdmNwdT4NCiAgPG9zPg0KICAgIDx0eXBlIGFyY2g9Ing4Nl82NCI+aHZtPC90eXBlPg0KICA8L29zPg0KICA8Y2xvY2sgc3luYz0idXRjIi8+DQogIDxvbl9wb3dlcm9mZj5kZXN0cm95PC9vbl9wb3dlcm9mZj4NCiAgPG9uX3JlYm9vdD5yZXN0YXJ0PC9vbl9yZWJvb3Q+DQogIDxvbl9jcmFzaD5yZXN0YXJ0PC9vbl9jcmFzaD4NCiAgPG9uX2xvY2tmYWlsdXJlPnBvd2Vyb2ZmPC9vbl9sb2NrZmFpbHVyZT4NCiAgPGZlYXR1cmVzPg0KICAgIDxwYWUvPg0KICAgIDxhY3BpLz4NCiAgICA8YXBpYy8+DQogIDwvZmVhdHVyZXM+DQogIDxkZXZpY2VzPg0KICAgIDxpbnB1dCB0eXBlPSdtb3VzZScgYnVzPSd1c2InLz4NCiAgICA8aW5wdXQgdHlwZT0na2V5Ym9hcmQnIGJ1cz0ndXNiJy8+DQogICAgPGdyYXBoaWNzIHR5cGU9J2Rlc2t0b3AnLz4NCiAgPC9kZXZpY2VzPg0KPC9kb21haW4+'
 
 		it('successfully create a VM', function(done){
-			vm_handler.handle('create_vm', {xmlconfig: encoded_xml}, function(error, result){
-				(error === null).should.equal(true);
-				(result.uuid === undefined).should.equal(false);
-				(result.xmlconfig === undefined).should.equal(false);
 
-				test_uuid = result.uuid;
+			var vm_config = {
+			  "hypervisor": "vbox",
+			  "name": "test_vm",
+			  "uuid": "fc30a230-0707-11e6-a735-496252aee5c8",
+			  "mem_size": 512,
+				"cpu_count": 1,
+				"platform": "x64",
+				"hd_list": [{"path": "{STORAGE_POOL}/test.vdi"}],
+				"cdrom_list": [{"path": "{ISO_POOL}/core.iso"}],
+				"interface_list": {},
+				"features": {
+					"acpi": true,
+					"apic": true,
+					"pae": true
+				},
+				"display": "local"
+			};
+
+			vm_handler.handle('create_vm', {config: vm_config}, function(error, result){
+				(error === null).should.equal(true);
+				result.should.equal(true);
+				test_uuid = vm_config.uuid;
 
 				done();
 			});
 		});
 
 	  });
+
 
 
 	  describe('vm_exists function (with VM)', function(){
 
-		it('return true querying existing vm', function(done){
-			vm_handler.handle('vm_exists', {uuid: test_uuid}, function(error, result){
-				(error == null).should.equal(true);
-				result.should.equal(true);
+			it('return true querying existing vm', function(done){
+				vm_handler.handle('vm_exists', {uuid: test_uuid}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
 
-				done();
+					done();
+				});
 			});
-		});
 
 	  });
+
+		describe('start_vm', function(){
+
+			it('should successfully start the VM', function(done){
+				this.timeout(15000);
+				vm_handler.handle('start_vm', {uuid: test_uuid}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
+					setTimeout(function(){
+						done();
+					}, 7000);
+				});
+			});
+
+	  });
+
+		describe('vm_is_running', function(){
+
+			it('should indicate the vm is running', function(done){
+
+				vm_handler.handle('vm_is_running', {uuid: test_uuid}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
+
+					done();
+
+				});
+			});
+
+	  });
+
+		describe('make_vm_snapshot', function(){
+
+			it('creates a snapshot of the VM', function(done){
+				vm_handler.handle('make_vm_snapshot', {uuid: test_uuid, snapshot_name: "test_snapshot"}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
+
+					done();
+				});
+			});
+
+			it('creates a second snapshot of the VM', function(done){
+				vm_handler.handle('make_vm_snapshot', {uuid: test_uuid, snapshot_name: "test_snapshot_2"}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
+
+					done();
+				});
+			});
+
+		});
+
+
+		describe('stop_vm', function(){
+
+			it('should successfully stop the VM', function(done){
+				this.timeout(7000);
+				vm_handler.handle('stop_vm', {uuid: test_uuid}, function(error, result){
+					console.log(error);
+					(error == null).should.equal(true);
+					result.should.equal(true);
+					setTimeout(function(){
+						done();
+					}, 3000);
+				});
+			});
+
+		});
+
+		describe('delete_vm_snapshot function', function(){
+
+			it('deletes a snapshot of the VM', function(done){
+				vm_handler.handle('delete_vm_snapshot', {uuid: test_uuid, snapshot_name: "test_snapshot"}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
+
+					done();
+				});
+			});
+
+			it('deletes the second snapshot of the VM', function(done){
+				vm_handler.handle('delete_vm_snapshot', {uuid: test_uuid, snapshot_name: "test_snapshot_2"}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(true);
+
+					done();
+				});
+			});
+
+		});
 
 
 	  describe('delete_vm function', function(){
@@ -114,7 +245,7 @@ describe('vm_handler Object:', function(){
 		it('cause error on not setting uuid', function(done){
 			vm_handler.handle('delete_vm', {}, function(error, result){
 				(error === null).should.equal(false);
-				error.should.equal("No UUID set");
+				error.should.equal("Invalid UUID");
 
 				done();
 			});
