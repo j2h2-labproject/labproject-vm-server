@@ -138,14 +138,14 @@ describe('switch_handler Object:', function(){
 		it('cause error on not setting param (port)', function(done){
 			vm_handler.handle('connect_port', {switch_id: "test"}, function(error, result){
 				(error == null).should.equal(false);
-				error.should.equal("No port was set");
+				error.should.equal("Invalid ports");
 
 				done();
 			});
 		});
 
 		it('should cause error on invalid port', function(done){
-			vm_handler.handle('connect_port', {switch_id: "test", port: "test2"}, function(error, result){
+			vm_handler.handle('connect_port', {switch_id: "test", ports: ["test2"]}, function(error, result){
 				(error == null).should.equal(false);
 
 				done();
@@ -153,7 +153,7 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('should succeed adding port test0', function(done){
-			vm_handler.handle('connect_port', {switch_id: "test", port: "test0"}, function(error, result){
+			vm_handler.handle('connect_port', {switch_id: "test", ports: ["test0"]}, function(error, result){
 				(error == null).should.equal(true);
 				(result == true).should.be.true;
 				done();
@@ -161,7 +161,7 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('should succeed in adding port test1', function(done){
-			vm_handler.handle('connect_port', {switch_id: "test", port: "test1"}, function(error, result){
+			vm_handler.handle('connect_port', {switch_id: "test", ports: ["test1"]}, function(error, result){
 				(error == null).should.equal(true);
 				(result == true).should.be.true;
 				done();
@@ -176,6 +176,7 @@ describe('switch_handler Object:', function(){
 			vm_handler.handle('list_ports', {switch_id: "test"}, function(error, result){
 				(error == null).should.equal(true);
 				result.should.be.instanceof.Array;
+				console.log(result);
 				result.length.should.equal(2);
 				done();
 			});
@@ -233,7 +234,7 @@ describe('switch_handler Object:', function(){
 		it('cause error on not setting param (port)', function(done){
 			vm_handler.handle('disconnect_port', {switch_id: "test"}, function(error, result){
 				(error == null).should.equal(false);
-				error.should.equal("No port was set");
+				error.should.equal("Invalid ports");
 
 				done();
 			});
