@@ -1,11 +1,9 @@
 module.exports = {
-	clientkey: '',
-	frontend: '',
 	hypervisor: 'vbox',
 	hypervisor_console: 'rdp',
 	uid: 'jacob',
 	gid: 'jacob',
-	driver: 'libvirt',
+	driver: 'vbox',
 	driver_config: {
 		hypervisor: 'vbox'
 	},
