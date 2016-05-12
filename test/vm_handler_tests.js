@@ -115,7 +115,7 @@ if (config.driver == 'vbox') {
 					"platform": "x64",
 					"hd_list": [{"path": "{STORAGE_POOL}/test.vdi", 'bus': 'sata'}],
 					"cdrom_list": [{"path": "{ISO_POOL}/core.iso", 'bus': 'ide'}],
-					"interface_list": {},
+					"interface_list": [{"interface": "test0.0"}],
 					"features": {
 						"acpi": true,
 						"apic": true,
