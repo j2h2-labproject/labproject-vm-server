@@ -1,8 +1,0 @@
-Create user and group 'labproject'
-useradd -r -U -M -s /bin/false labproject
-
-Add labproject to vbox group
-usermod -a -G vboxusers labproject
-
-Configure Libvirt with labproject:labproject
-./configure --with-qemu-user=labproject --with-qemu-group=labproject
