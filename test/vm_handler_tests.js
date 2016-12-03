@@ -106,11 +106,11 @@ if (config.driver == 'vbox') {
 			it('should successfully create a VM', function(done){
 
 				var vm_config = {
-				  "hypervisor": "vbox",
-				  "name": "test_vm",
+					"hypervisor": "vbox",
+					"name": "test_vm",
 					'description' : 'test',
-				  "uuid": "fc30a230-0707-11e6-a735-496252aee5c8",
-				  "mem_size": 512,
+					"uuid": "fc30a230-0707-11e6-a735-496252aee5c8",
+					"mem_size": 512,
 					"cpu_count": 1,
 					"platform": "x64",
 					"hd_list": [{"path": "{STORAGE_POOL}/test.vdi", 'bus': 'sata'}],
@@ -230,6 +230,26 @@ if (config.driver == 'vbox') {
 				it('should successfully stop the VM', function(done){
 					this.timeout(7000);
 					vm_handler.handle('stop_vm', {uuid: test_uuid}, function(error, result){
+						(error == null).should.equal(true);
+						result.should.equal(true);
+						setTimeout(function(){
+							done();
+						}, 3000);
+					});
+				});
+
+			});
+
+			describe('update_vm', function(){
+
+				it('should successfully update the VM', function(done){
+					this.timeout(7000);
+					vm_handler.handle('update_vm', {uuid: test_uuid, config: {
+						"interface_list": [null],
+						"cd_list": [null],
+						"mem_size": 256
+					}}, function(error, result){
+						console.log(error);
 						(error == null).should.equal(true);
 						result.should.equal(true);
 						setTimeout(function(){

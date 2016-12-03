@@ -17,8 +17,6 @@ startup.start(config, logger, function(error, address, port) {
 		logger.log("error", "Server failed to start", function(){});
 		process.exit(1);
 	}
-
-
 }, function(exitstatus) {
 	if (exitstatus == null) {
 		logger.log("notice", "Server has stopped", function(){})
