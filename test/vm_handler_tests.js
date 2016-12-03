@@ -124,6 +124,7 @@ if (config.driver == 'vbox') {
 					"display": "local"
 				};
 
+				this.timeout(15000);
 				vm_handler.handle('create_vm', {config: vm_config}, function(error, result){
 					(error === null).should.equal(true);
 					result.should.equal(true);
