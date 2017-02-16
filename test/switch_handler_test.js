@@ -16,6 +16,9 @@ var LABPROJECT_COMMON_BASE = process.cwd();
 
 describe('switch_handler Object:', function(){
 
+	var SWITCH_1_NAME = "test_sw1";
+	var SWITCH_2_NAME = "test_sw2";
+
 	before(function() {
 		switch_handler.set_logger(logger);
 	});
@@ -70,11 +73,11 @@ describe('switch_handler Object:', function(){
 
 		//
 		it('should return true when the switch is created, and the switch should now report as exists', function(done){
-			switch_handler.handle('create_switch', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('create_switch', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(true);
 				result.should.be.true;
 
-				switch_handler.handle('switch_exists', {switch_id: "test"}, function(error, result){
+				switch_handler.handle('switch_exists', {switch_id: SWITCH_1_NAME}, function(error, result){
 					(error == null).should.equal(true);
 					result.should.be.true;
 
@@ -107,7 +110,7 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('should return an empty list', function(done){
-			switch_handler.handle('list_ports', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('list_ports', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(true);
 				result.should.be.instanceof.Array;
 				result.length.should.equal(0);
@@ -143,7 +146,7 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('cause error on not setting param (port)', function(done){
-			switch_handler.handle('connect_port', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('connect_port', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(false);
 				error.should.equal("Invalid ports");
 
@@ -152,15 +155,14 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('should cause error on invalid port', function(done){
-			switch_handler.handle('connect_port', {switch_id: "test", ports: ["test2"]}, function(error, result){
+			switch_handler.handle('connect_port', {switch_id: SWITCH_1_NAME, ports: ["invalid"]}, function(error, result){
 				(error == null).should.equal(false);
-
 				done();
 			});
 		});
 
 		it('should succeed adding port test0', function(done){
-			switch_handler.handle('connect_port', {switch_id: "test", ports: ["test0"]}, function(error, result){
+			switch_handler.handle('connect_port', {switch_id: SWITCH_1_NAME, ports: ["test0"]}, function(error, result){
 				(error == null).should.equal(true);
 				(result == true).should.be.true;
 				done();
@@ -168,7 +170,7 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('should succeed in adding port test1', function(done){
-			switch_handler.handle('connect_port', {switch_id: "test", ports: ["test1"]}, function(error, result){
+			switch_handler.handle('connect_port', {switch_id: SWITCH_1_NAME, ports: ["test1"]}, function(error, result){
 				(error == null).should.equal(true);
 				(result == true).should.be.true;
 				done();
@@ -180,7 +182,7 @@ describe('switch_handler Object:', function(){
 	describe('list_ports function', function(){
 
 		it('should return a list with two ports', function(done){
-			switch_handler.handle('list_ports', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('list_ports', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(true);
 				result.should.be.instanceof.Array;
 				console.log(result);
@@ -194,7 +196,7 @@ describe('switch_handler Object:', function(){
 	describe('get_port_data function', function(){
 
 		it('should return error for invalid port', function(done){
-			switch_handler.handle('get_port_data', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('get_port_data', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(false);
 				error.should.equal("Port was not set");
 				done();
@@ -212,7 +214,76 @@ describe('switch_handler Object:', function(){
 
 	});
 
-	describe('disconnect_port function', function(){
+	describe('disconnect_port function (remove second port)', function(){
+		it('should remove port from switch', function(done){
+			switch_handler.handle('disconnect_port', {switch_id: SWITCH_1_NAME, ports: ["test1"]}, function(error, result){
+				(error === null).should.equal(true);
+				switch_handler.handle('list_ports', {switch_id: SWITCH_1_NAME}, function(error, result){
+					(error === null).should.equal(true);
+					result.should.be.instanceof.Array;
+					result.length.should.equal(1);
+					result[0].should.equal("test0");
+					done();
+				});
+			});
+		});
+
+	});
+
+
+	describe('patch_ports function', function() {
+
+		it('should create second switch', function(done){
+			switch_handler.handle('create_switch', {switch_id: SWITCH_2_NAME}, function(error, result){
+				(error == null).should.equal(true);
+				result.should.be.true;
+
+				switch_handler.handle('switch_exists', {switch_id: SWITCH_2_NAME}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.be.true;
+
+					done();
+				});
+			});
+		});
+
+
+		it('should succeed in adding port test1 to new switch', function(done){
+			switch_handler.handle('connect_port', {switch_id: SWITCH_2_NAME, ports: ["test1"]}, function(error, result){
+				(error == null).should.equal(true);
+				(result == true).should.be.true;
+				done();
+			});
+		});
+
+		it('should patch the ports on each switch', function(done){
+			switch_handler.handle('patch_ports', {peer1_port: "test0", peer2_port: "test1"}, function(error, result) {
+				(error === null).should.equal(true);
+				command.run('sudo',["ovs-vsctl", "show"], function(error, stdout, stderr){
+					if (!error)
+					{
+						// console.log(stdout);
+						done();
+					}
+				});
+			});
+		});
+
+		it('should remove port from second switch', function(done){
+			switch_handler.handle('disconnect_port', {switch_id: SWITCH_2_NAME, ports: ["test1"]}, function(error, result){
+				(error === null).should.equal(true);
+				switch_handler.handle('list_ports', {switch_id: SWITCH_2_NAME}, function(error, result){
+					(error === null).should.equal(true);
+					result.should.be.instanceof.Array;
+					result.length.should.equal(0);
+					done();
+				});
+			});
+		});
+
+	});
+
+	describe('disconnect_port function (remove first port)', function(){
 
 		// Delete the test ports
 		after(function(done){
@@ -239,7 +310,7 @@ describe('switch_handler Object:', function(){
 		});
 
 		it('cause error on not setting param (port)', function(done){
-			switch_handler.handle('disconnect_port', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('disconnect_port', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(false);
 				error.should.equal("Invalid ports");
 
@@ -261,14 +332,26 @@ describe('switch_handler Object:', function(){
 
 		//
 		it('should return true when the switch is deleted, and the switch should now report as not existing', function(done){
-			switch_handler.handle('delete_switch', {switch_id: "test"}, function(error, result){
+			switch_handler.handle('delete_switch', {switch_id: SWITCH_1_NAME}, function(error, result){
 				(error == null).should.equal(true);
 				result.should.be.true;
 
-				switch_handler.handle('switch_exists', {switch_id: "test"}, function(error, result){
+				switch_handler.handle('switch_exists', {switch_id: SWITCH_1_NAME}, function(error, result){
 					(error == null).should.equal(true);
-					result.should.be.false;
+					result.should.equal(false);
+					done();
+				});
 
+			});
+		});
+
+		it('should delete second switch', function(done){
+			switch_handler.handle('delete_switch', {switch_id: SWITCH_2_NAME}, function(error, result){
+				(error == null).should.equal(true);
+				result.should.be.true;
+				switch_handler.handle('switch_exists', {switch_id: SWITCH_2_NAME}, function(error, result){
+					(error == null).should.equal(true);
+					result.should.equal(false);
 					done();
 				});
 
