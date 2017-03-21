@@ -49,34 +49,24 @@ describe('disk_handler Object:', function(){
 
 	describe('create_disk function', function(){
 
-
-
 		it('cause error on not setting XML config', function(done){
 			disk_handler.handle('create_disk', {}, function(error, result){
 				(error == null).should.equal(false);
-				error.should.equal("XML config not set");
+				error.should.equal("Parameters not set");
 				done();
 			});
 		});
 
 		it('should create a disk', function(done){
 
-
-
-			xml_config = '<volume><name>' + DISK_NAME + '</name><allocation>0</allocation><capacity unit="G">2</capacity><target><format type="vdi"/><path>' + DISK_PATH + '</path></target></volume> '
-
-			//~ console.log(xml_config);
-
-			disk_handler.handle('create_disk', {xmlconfig: xml_config}, function(error, result){
-				(error == null).should.equal(true);
-				result.should.be.true;
-				fs.stat(DISK_PATH, function(error, stat) {
-					(error == null).should.equal(true);
+			disk_handler.handle('create_disk', {diskname: DISK_NAME, size: 1, format: 'vdi'}, function(error, result){
+				(error === null).should.equal(true);
+				result.should.equal(true);
+				fs.stat(config.pool_path + "/" + DISK_NAME, function(error, stat) {
+					(error === null).should.equal(true);
+					done();
 				});
-
-
-
-				done();
+				
 			});
 		});
 
