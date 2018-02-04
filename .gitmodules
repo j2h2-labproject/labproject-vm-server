@@ -1,6 +1,6 @@
 [submodule "lib/common"]
-	path = lib/common
-	url = https://github.com/j2h2-labproject/labproject-common
+    path = lib/common
+    url = https://github.com/j2h2-labproject/labproject-common
 [submodule "doc"]
-	path = doc
-	url = https://github.com/j2h2-labproject/labproject-vm-server.wiki.git
+    path = doc
+    url = https://github.com/j2h2-labproject/labproject-vm-server.wiki.git

@@ -13,28 +13,28 @@ var LABPROJECT_COMMON_BASE = process.cwd();
 
 describe('network_handler Object:', function(){
 
-	describe('handles functions', function(){
+    describe('handles functions', function(){
 
-		it('should handle expected functions', function(){
+        it('should handle expected functions', function(){
       network_handler.handles('create_tap_interface').should.equal(true);
       network_handler.handles('remove_tap_interface').should.equal(true);
       network_handler.handles('allocate_interface_group').should.equal(true);
       network_handler.handles('deallocate_interface_group').should.equal(true);
       network_handler.handles('nothing').should.equal(false);
-		});
+        });
 
-	});
+    });
 
-	describe('create and delete tap interfaces', function(){
+    describe('create and delete tap interfaces', function(){
 
     var interface_name = "test1.0";
 
     it('should show interface does not exist', function(done){
       command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
-  			(error == null).should.equal(false);
+              (error == null).should.equal(false);
         done();
-  		});
-		});
+          });
+        });
 
     it('should indicate the interface does not exist', function(done){
       network_handler.handle('interface_exists', {"interface": interface_name}, function(error, result){
@@ -44,16 +44,16 @@ describe('network_handler Object:', function(){
       });
     });
 
-		it('should create a tap interface', function(done){
+        it('should create a tap interface', function(done){
       network_handler.handle('create_tap_interface', {"interface": interface_name}, function(error, result){
-				(error == null).should.equal(true);
+                (error == null).should.equal(true);
         command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
-    			(error == null).should.equal(true);
+                (error == null).should.equal(true);
           done();
-    		});
-			});
+            });
+            });
 
-		});
+        });
 
     it('should indicate the interface exists', function(done){
       network_handler.handle('interface_exists', {"interface": interface_name}, function(error, result){
@@ -65,15 +65,15 @@ describe('network_handler Object:', function(){
 
     it('should remove a tap interface', function(done){
       network_handler.handle('remove_tap_interface', {"interface": interface_name}, function(error, result){
-				(error === null).should.equal(true);
+                (error === null).should.equal(true);
         command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
-    			(error === null).should.equal(false);
+                (error === null).should.equal(false);
           done();
-    		});
-			});
-		});
+            });
+            });
+        });
 
-	});
+    });
 
   describe('create and delete interface groups', function(){
 
@@ -88,7 +88,7 @@ describe('network_handler Object:', function(){
           done();
         });
       });
-		});
+        });
 
     it('should not create a group with an invalid group number', function(done){
       network_handler.handle('allocate_interface_group', {"group_num": 999999999}, function(error, result){
@@ -99,7 +99,7 @@ describe('network_handler Object:', function(){
           done();
         });
       });
-		});
+        });
 
     it('should create a group', function(done){
       network_handler.handle('allocate_interface_group', {"group_num": group_number}, function(error, result){
@@ -109,7 +109,7 @@ describe('network_handler Object:', function(){
           done();
         });
       });
-		});
+        });
 
     it('should remove a group', function(done){
       network_handler.handle('deallocate_interface_group', {"group_num": group_number}, function(error, result){
@@ -127,7 +127,7 @@ describe('network_handler Object:', function(){
         error.should.equal("Invalid group number");
         done();
       });
-		});
+        });
 
     it('should not remove a group with an invalid group number', function(done){
       network_handler.handle('deallocate_interface_group', {"group_num": 999999999}, function(error, result){
@@ -135,8 +135,8 @@ describe('network_handler Object:', function(){
         error.should.equal("Invalid group number");
         done();
       });
-		});
+        });
 
-	});
+    });
 
 })

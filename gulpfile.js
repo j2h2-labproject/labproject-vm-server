@@ -5,11 +5,11 @@ var exec = require('child_process').exec;
 var clicolor = require("cli-color");
 
 var colors = {
-	error: clicolor.redBright,
-	warning: clicolor.xterm(202),
-	debug: clicolor.cyanBright,
-	notice: clicolor.blueBright,
-	good: clicolor.greenBright
+    error: clicolor.redBright,
+    warning: clicolor.xterm(202),
+    debug: clicolor.cyanBright,
+    notice: clicolor.blueBright,
+    good: clicolor.greenBright
 };
 
 var JAVASCRIPT_PATH = '**/*.js';
@@ -34,7 +34,7 @@ gulp.task('run_eslint', ['run_jshint'], function() {
 });
 
 gulp.task('run_jshint', function() {
-	console.log(colors.notice("\nRunning JSLint\n"));
+    console.log(colors.notice("\nRunning JSLint\n"));
   var stream =  gulp.src([JAVASCRIPT_PATH,'!node_modules/**', '!**/test/**'])
   .pipe(jshint())
   .pipe(jshint.reporter('default'));
@@ -43,12 +43,12 @@ gulp.task('run_jshint', function() {
 
 gulp.task('linter_watch', function() {
   gulp.watch([JAVASCRIPT_PATH, '!node_modules/**', '!test/**'], function(event) {
-  	console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
-		console.log(colors.notice("\nRunning Linters\n"));
-		gulp.src([event.path])
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
-	});
+      console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
+        console.log(colors.notice("\nRunning Linters\n"));
+        gulp.src([event.path])
+        .pipe(jshint())
+        .pipe(jshint.reporter('default'));
+    });
 });
 
 gulp.task('default', ['watch_self', 'linter_watch'], function() {
