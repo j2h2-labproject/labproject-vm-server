@@ -7,10 +7,13 @@
     "labroject"
   ],
   "dependencies": {
+    "cli-color": "^1.2.0",
     "diskusage": "*",
+    "libvirt": "git+https://github.com/hooklift/node-libvirt.git",
     "xmlbuilder": "^8.2.2"
   },
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "*",
+    "should": "^13.2.1"
   }
 }

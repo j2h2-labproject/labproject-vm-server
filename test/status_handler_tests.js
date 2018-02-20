@@ -18,6 +18,7 @@ describe('status_handler Object:', function(){
             //, 'list_snapshots', 'start', 'end', 'suspend', 'set_config', 'get_config', 'restore_snapshot', 'make_snapshot', 'console'
             status_handler.handles('systeminfo').should.be.true;
             status_handler.handles('usage').should.be.true;
+            status_handler.handles('debugdump').should.be.true;
             status_handler.handles('vm_exists').should.be.false;
         });
 
@@ -39,6 +40,16 @@ describe('status_handler Object:', function(){
     describe('usage function', function(){
         it('should get usage info', function(done){
             status_handler.handle('usage', {}, function(error, result){
+                (error === null).should.equal(true);
+                console.log(result);
+                done();
+            });
+        });
+    });
+
+    describe('debugdump function', function(){
+        it('should get debugdump info', function(done){
+            status_handler.handle('debugdump', {}, function(error, result){
                 (error === null).should.equal(true);
                 console.log(result);
                 done();

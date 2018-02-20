@@ -6,6 +6,13 @@ The VM server is the component that does most of the legwork. It interacts with 
 
 TODO
 
+### Sudo
+
+```
+<USER> ALL=(ALL) NOPASSWD: /usr/bin/ovs-vsctl
+<USER> ALL=(ALL) NOPASSWD: /sbin/ip
+```
+
 ## Usage
 
 TODO
