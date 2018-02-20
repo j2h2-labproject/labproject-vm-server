@@ -4,7 +4,12 @@ The VM server is the component that does most of the legwork. It interacts with 
 
 ## Installation
 
-TODO
+Ubuntu:
+```
+sudo apt-get install qemu-utils libvirt-bin libvirt-dev openvswitch-switch virtualbox
+```
+
+You will also need Nodejs and MongoDB.
 
 ### Sudo
 
