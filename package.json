@@ -9,11 +9,13 @@
   "dependencies": {
     "cli-color": "^1.2.0",
     "diskusage": "*",
+    "download-file": "^0.1.5",
     "libvirt": "git+https://github.com/hooklift/node-libvirt.git",
+    "socket.io": "^2.0.4",
     "xmlbuilder": "^8.2.2"
   },
   "devDependencies": {
-    "mocha": "*",
+    "mocha": "^5.0.1",
     "should": "^13.2.1"
   }
 }

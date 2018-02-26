@@ -9,6 +9,7 @@ var iso_handler = require(LABPROJECT_LIB + "/handlers/iso_handler");
 
 var LABPROJECT_COMMON_BASE = process.cwd();
 
+const tinycore_url = "http://distro.ibiblio.org/tinycorelinux/8.x/x86/release/Core-current.iso";
 
 describe('iso_handler Object:', function(){
 
@@ -37,15 +38,15 @@ describe('iso_handler Object:', function(){
         });
 
         afterEach(function() {
-            fs.unlink(config.iso_path + "/test1.iso");
-            fs.unlink(config.iso_path + "/test2.iso");
-            fs.unlink(config.iso_path + "/hidden");
+            fs.unlinkSync(config.iso_path + "/test1.iso");
+            fs.unlinkSync(config.iso_path + "/test2.iso");
+            fs.unlinkSync(config.iso_path + "/hidden");
         });
 
 // Begin tests
 
         it('should return a list of ISOs (via handle function)', function(done){
-            iso_handler.handle('list', {}, function(error, list){
+            iso_handler.handle('list_isos', {}, function(error, list){
                 (error == null).should.be.true;
                 list.should.containDeep(['test1', 'test2']);
                 list.should.not.containDeep(['hidden']);
@@ -54,6 +55,41 @@ describe('iso_handler Object:', function(){
             });
         });
 
-      });
+        it('should download tinycore', function(done){
+            this.timeout(40000);
+            iso_handler.handle('download_http', {"url": tinycore_url, "filename": "tinycore"}, function(error, result) {
+                (error == null).should.be.true;
+                (result === true).should.value.true;
+                iso_handler.handle('list_isos', {}, function(error, list){
+                    (error == null).should.be.true;
+                    list.should.containDeep(['tinycore', 'test2']);
+                    
+                    done();
+                });
+            });
+        });
 
-})
+        it('should get tinycore size', function(done){
+            iso_handler.handle('get_iso_size', {"filename": "tinycore"}, function(error, size) {
+                (error === null).should.be.true;
+                (size > 5000000).should.value.true;
+                done();
+            });
+        });
+
+        it('should delete tinycore', function(done){
+            this.timeout(40000);
+            iso_handler.handle('delete_iso', {"filename": "tinycore"}, function(error, result) {
+                (error == null).should.be.true;
+                (size === true).should.value.true;
+                iso_handler.handle('list_isos', {}, function(error, list){
+                    (error == null).should.be.true;
+                    list.should.not.containDeep(['tinycore']);
+                    
+                    done();
+                });
+            });
+        });
+
+      });
+});
