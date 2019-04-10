@@ -8,32 +8,62 @@ var config = require(LABPROJECT_BASE + "/config");
 var vm_handler = require(LABPROJECT_LIB + "/handlers/vm_handler");
 var command = require(LABPROJECT_LIB + "/common/command");
 var string_util = require(LABPROJECT_LIB + "/common/string");
+var interfaces = require(LABPROJECT_LIB + "/util/interfaces");
 
 var LABPROJECT_COMMON_BASE = process.cwd();
 
+const TEST_INTERFACE = 'mocha0';
+const HD_PATH = config.pool_path + "/test.vdi";
+const CD_URL = "http://distro.ibiblio.org/tinycorelinux/9.x/x86/release/Core-current.iso";
+const CD_PATH = "/tmp/core.iso";
 
 if (config.driver == 'vbox') {
     describe('(vbox) vm_handler Object:', function(){
 
-        before(function(done){
-            command.run("qemu-img", ["create", "-f", "vdi", config.pool_path + "/test.vdi", "512M"], function(error, stdout, stderr) {
-                if (error) {
-                    (null != null).should.equal(true);
-                }
-                done();
-            });
+        before(function(done) {
+            this.timeout(15000);
+            var vm_setup = function() {
+                command.run("qemu-img", ["create", "-f", "vdi", HD_PATH, "512M"], function(error, stdout, stderr) {
+                    if (error) {
+                        (null != null).should.equal(true);
+                    }
+                    interfaces.create_tap_interface(TEST_INTERFACE, function(c_error, result) {
+                        if (c_error) {
+                            (c_error === null).should.equal(true);
+                        } 
+                        done();
+                    });
+                });
+            };
+
+            if (!fs.existsSync(CD_PATH)) {
+                command.run("wget", ["-O", CD_PATH, CD_URL], function(down_error, stdout, stderr) {
+                    if (down_error) {
+                        (down_error === null).should.equal(true);
+                    }
+                    vm_setup();
+                });
+            } else {
+                vm_setup();
+            }
         });
 
-        // after(function(done) {
-        //     command.run("VBoxManage", ["closemedium", 'disk', config.pool_path + "/test.vdi"], function(error, stdout, stderr) {
-        //
-        //         if (error) {
-        //             (null != null).should.equal(true);
-        //         }
-        //         fs.unlink(config.pool_path + "/test.vdi");
-        //         done();
-        //     });
-        // });
+        after(function(done) {
+            interfaces.remove_tap_interface(TEST_INTERFACE, function(i_error, result) {
+                if (i_error) {
+                    (i_error === null).should.equal(true);
+                } 
+                done();
+            });
+            // command.run("VBoxManage", ["closemedium", 'disk', config.pool_path + "/test.vdi"], function(error, stdout, stderr) {
+        
+            //     if (error) {
+            //         (null != null).should.equal(true);
+            //     }
+            //     fs.unlink(config.pool_path + "/test.vdi");
+            //     done();
+            // });
+        });
 
 
         describe('handles function', function(){
@@ -113,9 +143,9 @@ if (config.driver == 'vbox') {
                     "mem_size": 512,
                     "cpu_count": 1,
                     "platform": "x64",
-                    "hd_list": [{"path": "{STORAGE_POOL}/test.vdi", 'bus': 'sata'}],
-                    "cdrom_list": [{"path": "{ISO_POOL}/core.iso", 'bus': 'ide'}],
-                    "interface_list": [{"interface": "test0.0"}],
+                    "hd_list": [{"path": HD_PATH, 'bus': 'sata'}],
+                    "cd_list": [{"path": CD_PATH, 'bus': 'ide'}],
+                    "interface_list": [{"interface": TEST_INTERFACE, "connected": true}],
                     "features": {
                         "acpi": true,
                         "apic": true,
@@ -177,6 +207,7 @@ if (config.driver == 'vbox') {
             it('should successfully start the VM', function(done){
                 this.timeout(15000);
                 vm_handler.handle('start_vm', {uuid: test_uuid}, function(error, result){
+                    console.log(error);
                     (error == null).should.equal(true);
                     result.should.equal(true);
                     setTimeout(function(){
@@ -245,8 +276,8 @@ if (config.driver == 'vbox') {
                 it('should successfully update the VM', function(done){
                     this.timeout(7000);
                     vm_handler.handle('update_vm', {uuid: test_uuid, config: {
-                        "interface_list": [null],
-                        "cd_list": [null],
+                        "interface_list": [{"interface": null}],
+                        "cd_list": [{"path": null, "bus": "ide"}],
                         "mem_size": 256
                     }}, function(error, result){
                         console.log(error);

@@ -44,16 +44,23 @@ describe('network_handler Object:', function(){
       });
     });
 
-        it('should create a tap interface', function(done){
-      network_handler.handle('create_tap_interface', {"interface": interface_name}, function(error, result){
+    it('should create a tap interface', function(done){
+        network_handler.handle('create_tap_interface', {"interface": interface_name}, function(error, result){
+            (error == null).should.equal(true);
+            command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
                 (error == null).should.equal(true);
-        command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
-                (error == null).should.equal(true);
-          done();
+                done();
             });
-            });
-
         });
+    });
+
+    it('should not recreate a tap interface', function(done){
+        network_handler.handle('create_tap_interface', {"interface": interface_name}, function(error, result){
+            (error == null).should.equal(true);
+            result.should.equal(false);
+            done();
+        });
+    });
 
     it('should indicate the interface exists', function(done){
       network_handler.handle('interface_exists', {"interface": interface_name}, function(error, result){
@@ -64,77 +71,107 @@ describe('network_handler Object:', function(){
     });
 
     it('should remove a tap interface', function(done){
-      network_handler.handle('remove_tap_interface', {"interface": interface_name}, function(error, result){
+        network_handler.handle('remove_tap_interface', {"interface": interface_name}, function(error, result){
                 (error === null).should.equal(true);
-        command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
-                (error === null).should.equal(false);
-          done();
+                command.run("sudo", ["ip", "addr", "show", interface_name], function(error, stdout, stderr) {
+                    (error === null).should.equal(false);
+                    done();
+                });
             });
+        });
+    });
+
+    describe('create and delete interface groups', function(){
+
+        var group_number = 10;
+
+        it('should not create an invalid group', function(done){
+            network_handler.handle('allocate_interface_group', {"group_num": "blaa"}, function(error, result){
+            (error == null).should.equal(false);
+            error.should.equal("Invalid group number");
+            command.run("sudo", ["ip", "addr", "show", "lpifblaa"], function(error, stdout, stderr) {
+                (error == null).should.equal(false);
+                done();
+            });
+            });
+            });
+
+        it('should not create a group with an invalid group number', function(done){
+            network_handler.handle('allocate_interface_group', {"group_num": 999999999}, function(error, result){
+            (error == null).should.equal(false);
+            error.should.equal("Invalid group number");
+            command.run("sudo", ["ip", "addr", "show", "lpifblaa"], function(error, stdout, stderr) {
+                (error == null).should.equal(false);
+                done();
+            });
+            });
+            });
+
+        it('should create a group', function(done){
+            network_handler.handle('allocate_interface_group', {"group_num": group_number}, function(error, result){
+            (error == null).should.equal(true);
+            command.run("sudo", ["ip", "addr", "show", "lpif" + group_number], function(error, stdout, stderr) {
+                (error == null).should.equal(true);
+                done();
+            });
+            });
+            });
+
+        it('should remove a group', function(done){
+            network_handler.handle('deallocate_interface_group', {"group_num": group_number}, function(error, result){
+            (error == null).should.equal(true);
+            command.run("sudo", ["ip", "addr", "show", "lpif" + group_number], function(error, stdout, stderr) {
+                (error == null).should.equal(false);
+                done();
+            });
+            });
+        });
+
+        it('should not remove an invalid group', function(done){
+            network_handler.handle('deallocate_interface_group', {"group_num": "blaa"}, function(error, result){
+            (error == null).should.equal(false);
+            error.should.equal("Invalid group number");
+            done();
+            });
+            });
+
+        it('should not remove a group with an invalid group number', function(done){
+            network_handler.handle('deallocate_interface_group', {"group_num": 999999999}, function(error, result){
+                (error == null).should.equal(false);
+                error.should.equal("Invalid group number");
+                done();
             });
         });
 
     });
 
-  describe('create and delete interface groups', function(){
+    describe('Allocate maintenance interface', function(){
 
-    var group_number = 10;
+        var maint_int;
 
-    it('should not create an invalid group', function(done){
-      network_handler.handle('allocate_interface_group', {"group_num": "blaa"}, function(error, result){
-        (error == null).should.equal(false);
-        error.should.equal("Invalid group number");
-        command.run("sudo", ["ip", "addr", "show", "lpifblaa"], function(error, stdout, stderr) {
-          (error == null).should.equal(false);
-          done();
-        });
-      });
-        });
+        it('Allocates a maintenance interface', function(done){
+            network_handler.handle("allocate_maint_interface", {}, function(error, new_int) {
+                maint_int = new_int;
+                (error === null).should.equal(true);
+                (maint_int === null).should.equal(false);
+                console.log(maint_int);
 
-    it('should not create a group with an invalid group number', function(done){
-      network_handler.handle('allocate_interface_group', {"group_num": 999999999}, function(error, result){
-        (error == null).should.equal(false);
-        error.should.equal("Invalid group number");
-        command.run("sudo", ["ip", "addr", "show", "lpifblaa"], function(error, stdout, stderr) {
-          (error == null).should.equal(false);
-          done();
-        });
-      });
+                command.run("sudo", ["ip", "addr", "show", maint_int], function(error, stdout, stderr) {
+                    (error === null).should.equal(true);
+                    done();
+                });
+            });
         });
 
-    it('should create a group', function(done){
-      network_handler.handle('allocate_interface_group', {"group_num": group_number}, function(error, result){
-        (error == null).should.equal(true);
-        command.run("sudo", ["ip", "addr", "show", "lpif" + group_number], function(error, stdout, stderr) {
-          (error == null).should.equal(true);
-          done();
-        });
-      });
-        });
-
-    it('should remove a group', function(done){
-      network_handler.handle('deallocate_interface_group', {"group_num": group_number}, function(error, result){
-        (error == null).should.equal(true);
-        command.run("sudo", ["ip", "addr", "show", "lpif" + group_number], function(error, stdout, stderr) {
-          (error == null).should.equal(false);
-          done();
-        });
-      });
-    });
-
-    it('should not remove an invalid group', function(done){
-      network_handler.handle('deallocate_interface_group', {"group_num": "blaa"}, function(error, result){
-        (error == null).should.equal(false);
-        error.should.equal("Invalid group number");
-        done();
-      });
-        });
-
-    it('should not remove a group with an invalid group number', function(done){
-      network_handler.handle('deallocate_interface_group', {"group_num": 999999999}, function(error, result){
-        (error == null).should.equal(false);
-        error.should.equal("Invalid group number");
-        done();
-      });
+        it('should remove maintenace interface', function(done){
+            (maint_int === null).should.equal(false);
+            network_handler.handle('remove_tap_interface', {"interface": maint_int}, function(error, result){
+                (error === null).should.equal(true);
+                command.run("sudo", ["ip", "addr", "show", maint_int], function(error, stdout, stderr) {
+                    (error === null).should.equal(false);
+                    done();
+                });
+            });
         });
 
     });

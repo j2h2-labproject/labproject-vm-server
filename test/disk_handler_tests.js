@@ -34,6 +34,7 @@ describe('disk_handler Object:', function(){
         it('should get disk space data', function(done){
 
             disk_handler.handle('get_disk_space', {}, function(error, result){
+                console.log(error);
                 (error === null).should.equal(true);
                 result.available.should.not.equal(0);
                 result.free.should.not.equal(0);
@@ -45,24 +46,24 @@ describe('disk_handler Object:', function(){
 
     POOL_PATH = "/tmp/"
     DISK_NAME = "TEST_DISK";
-    DISK_PATH = '{STORAGE_POOL}/' + DISK_NAME + '.vdi';
+    DISK_PATH = config.pool_path + "/" + DISK_NAME + '.vdi';
 
     describe('create_disk function', function(){
 
         it('cause error on not setting XML config', function(done){
             disk_handler.handle('create_disk', {}, function(error, result){
                 (error == null).should.equal(false);
-                error.should.equal("Parameters not set");
+                error.should.equal("Config not set");
                 done();
             });
         });
 
         it('should create a disk', function(done){
-
-            disk_handler.handle('create_disk', {diskname: DISK_NAME, size: 1, format: 'vdi'}, function(error, result){
+            this.timeout(5000);
+            disk_handler.handle('create_disk', {diskname: DISK_NAME, size: 1024, format: 'vdi'}, function(error, result){
                 (error === null).should.equal(true);
-                result.should.equal(true);
-                fs.stat(config.pool_path + "/" + DISK_NAME, function(error, stat) {
+                result.should.equal(DISK_PATH);
+                fs.stat(DISK_PATH, function(error, stat) {
                     (error === null).should.equal(true);
                     done();
                 });
@@ -83,7 +84,7 @@ describe('disk_handler Object:', function(){
         });
 
         it('show an error for disk that does not exist', function(done){
-            disk_handler.handle('disk_exists', {diskname: "not_here"}, function(error, result){
+            disk_handler.handle('disk_exists', {diskpath: "not_here"}, function(error, result){
                 (error == null).should.equal(true);
                 result.should.be.false;
                 done();
@@ -91,7 +92,7 @@ describe('disk_handler Object:', function(){
         });
 
         it('return true for a disk that exists', function(done){
-            disk_handler.handle('disk_exists', {diskname: DISK_NAME}, function(error, result){
+            disk_handler.handle('disk_exists', {diskpath: DISK_PATH}, function(error, result){
                 (error == null).should.equal(true);
                 result.should.be.true;
                 done();
@@ -111,7 +112,7 @@ describe('disk_handler Object:', function(){
         });
 
         it('show an error for disk that does not exist', function(done){
-            disk_handler.handle('disk_info', {diskname: "not_here"}, function(error, result){
+            disk_handler.handle('disk_info', {diskpath: "not_here"}, function(error, result){
                 (error == null).should.equal(false);
                 error.should.equal("Disk not found");
                 done();
@@ -119,7 +120,7 @@ describe('disk_handler Object:', function(){
         });
 
         it('return data for a disk that exists', function(done){
-            disk_handler.handle('disk_info', {diskname: DISK_NAME}, function(error, result){
+            disk_handler.handle('disk_info', {diskpath: DISK_PATH}, function(error, result){
                 (error == null).should.equal(true);
                 done();
             });
@@ -138,8 +139,8 @@ describe('disk_handler Object:', function(){
             });
         });
 
-        it('should create a disk', function(done){
-            disk_handler.handle('remove_disk', {diskname: DISK_NAME}, function(error, result){
+        it('should remove a disk', function(done){
+            disk_handler.handle('remove_disk', {diskpath: DISK_PATH}, function(error, result){
                 (error == null).should.equal(true);
                 result.should.be.true;
 
